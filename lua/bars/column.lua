@@ -1,0 +1,3 @@
+local statuscolumn = {};
+
+return statuscolumn;
