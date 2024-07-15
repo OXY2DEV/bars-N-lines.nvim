@@ -19,6 +19,7 @@ ffi.cdef([[
 
 statuscolumn.configuration = {
 	default = {
+		{ type = "sign" },
 		{
 			type = "fold",
 			add_clicks = true
@@ -164,6 +165,16 @@ statuscolumn.render_folds = function (window, buffer, config_table)
 	return _f;
 end
 
+statuscolumn.render_signs = function (buffer, config_table)
+	local signs = utils.sort_by_priority(vim.api.nvim_buf_get_extmarks(buffer, -1, { vim.v.lnum - 1, 0 }, { vim.v.lnum - 1, -1 }, { type = "sign", details = true }), config_table.min_priority);
+
+	if signs and signs[1] and signs[1][4] and signs[1][4].sign_text then
+		return "%#" .. signs[1][4].sign_hl_group .. "#" .. signs[1][4].sign_text
+	end
+
+	return "  ";
+end
+
 statuscolumn.draw = function (window, buffer)
 	local conf = utils.find_config(statuscolumn.configuration, buffer);
 	local _col = "";
@@ -175,10 +186,27 @@ statuscolumn.draw = function (window, buffer)
 			_col = _col .. statuscolumn.render_number(buffer, part);
 		elseif part.type == "fold" then
 			_col = _col .. statuscolumn.render_folds(window, buffer, part);
+		elseif part.type == "sign" then
+			_col = _col .. statuscolumn.render_signs(buffer, part);
 		end
 	end
 
 	return _col;
+end
+
+statuscolumn.init = function (buffer, window, config_table)
+	vim.wo[window].relativenumber = true; -- Redraw on cursor
+
+	vim.wo[window].foldcolumn = "0";
+	vim.wo[window].signcolumn = "no";
+
+	vim.wo[window].numberwidth = 1; -- Prevent Click related bug
+
+	vim.wo[window].statuscolumn = "%!v:lua.require('bars.column').draw(" .. window .. "," .. buffer .. ")"
+end
+
+statuscolumn.disable = function (window)
+	vim.wo[window].statuscolumn = "";
 end
 
 return statuscolumn;
