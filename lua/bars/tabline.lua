@@ -170,7 +170,7 @@ tabline.draw = function ()
 end
 
 tabline.init = function ()
-	vim.o.tabline = "%!v:lua.require('bars/tabs').draw()";
+	vim.o.tabline = "%!v:lua.require('bars.tabline').draw()";
 end
 
 tabline.disable = function ()

@@ -185,7 +185,7 @@ end
 
 statusline.init = function (buffer, window, config_table)
 	vim.g.cmdheight = 0;
-	vim.wo[window].statusline = "%!v:lua.require('bars/lines').draw(" .. window .. "," .. buffer .. ")";
+	vim.wo[window].statusline = "%!v:lua.require('bars.statusline').draw(" .. window .. "," .. buffer .. ")";
 end
 
 statusline.disable = function (window)

@@ -202,7 +202,7 @@ statuscolumn.init = function (buffer, window, config_table)
 
 	vim.wo[window].numberwidth = 1; -- Prevent Click related bug
 
-	vim.wo[window].statuscolumn = "%!v:lua.require('bars.column').draw(" .. window .. "," .. buffer .. ")"
+	vim.wo[window].statuscolumn = "%!v:lua.require('bars.statuscolumn').draw(" .. window .. "," .. buffer .. ")"
 end
 
 statuscolumn.disable = function (window)
