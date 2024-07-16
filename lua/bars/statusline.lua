@@ -9,7 +9,8 @@ statusline.configuration = {
 
 			padding_left = " ",
 			padding_left_hl = {
-				__is_hl = true,
+				-- __is_hl = true,
+
 				["n"] = "mode_normal_alt",
 				["i"] = "mode_insert_alt",
 
