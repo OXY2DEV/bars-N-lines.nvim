@@ -128,7 +128,7 @@ statuscolumn.render_folds = function (window, buffer, config_table)
 	});
 	local hls = vim.tbl_extend("keep", config_table.hls or {}, {
 		marker_open = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" },
-		marker_close = "FoldColumn",
+		marker_close = { "rainbow1_dark", "rainbow2_dark", "rainbow3_dark", "rainbow4_dark", "rainbow5_dark", "rainbow6_dark" },
 
 		middle = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" },
 		bottom = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" },
@@ -141,8 +141,10 @@ statuscolumn.render_folds = function (window, buffer, config_table)
 	if foldInfo.start == vim.v.lnum then
 		if vim.fn.foldclosed(vim.v.lnum) ~= -1 then
 			_f = utils.set_hl(utils.format_input(hls.marker_open, foldInfo.level)) .. utils.format_input(parts.marker_open, foldInfo.level);
-		else
+		elseif foldInfo_after.level >= foldInfo.level then
 			_f = utils.set_hl(utils.format_input(hls.marker_close, foldInfo.level)) .. utils.format_input(parts.marker_close, foldInfo.level);
+		elseif foldInfo_after.level >= 1 then
+			_f = utils.set_hl(utils.format_input(hls.middle, foldInfo.level)) .. utils.format_input(parts.middle, foldInfo.level);
 		end
 
 		if config_table.add_clicks == true then

@@ -149,7 +149,13 @@ end
 
 statusline.render_bufname = function (buffer, config_table)
 	local buffer_name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buffer), ":t");
+
 	local icon, _ = devicons.get_icon(buffer_name);
+
+	if buffer_name == "" then
+		buffer_name = "No name";
+		icon = " "
+	end
 
 	config_table.text = (icon or "") .. " "  .. buffer_name;
 

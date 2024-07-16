@@ -260,6 +260,8 @@ utils.switch_to_buf = function (buf)
 			end
 		end
 	end
+
+	vim.api.nvim_set_current_buf(buf);
 end
 
 return utils;
