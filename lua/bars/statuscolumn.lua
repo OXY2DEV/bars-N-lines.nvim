@@ -1,6 +1,8 @@
-local statuscolumn = {};
-local utils = require("bars/utils");
+local storage = require("bars.storage");
+local utils = require("bars.utils");
 local ffi = require("ffi");
+
+local statuscolumn = {};
 
 ffi.cdef([[
 	typedef struct {} Error;
@@ -17,186 +19,378 @@ ffi.cdef([[
 	foldinfo_T fold_info(win_T* wp, int lnum);
 ]]);
 
+--- Turns a highlight group into a statusline part
+---@param group_name (string | fun(): string)?
+---@return string
+local set_hl = function (group_name, ...)
+	if type(group_name) ~= "string" then
+		return "";
+	elseif vim.fn.hlexists("Bars" .. group_name) == 1 then
+		return "%#Bars" .. group_name .. "#";
+	elseif vim.fn.hlexists(group_name) == 1 then
+		return "%#" .. tostring(group_name) .. "#";
+	else
+		return "";
+	end
+end
+
+--- Gets the value when the value can be
+--- optionally a function
+---@param val any
+---@param ... any
+---@return any
+local get_value = function (val, ...)
+	if pcall(val, ...) then
+		return val(...);
+	end
+
+	return val;
+end
+
+--- Gets the output of a part of the statuscolumn
+---@param part table
+---@param window integer
+---@return string
+---@return integer
+local get_output = function (part, window)
+	local _t = "";
+	local w = 0;
+
+	if part.click then
+		if type(part.click) == "string" then
+			_t = "%@" .. part.click .. "@";
+		elseif type(part.click) == "function" then
+			local id = storage.set_func("statuscolumn", part.id or "unnamed", part.click);
+
+			_t = "%@v:lua.__bars.statuscolumn.funcs." .. id .. "@";
+		end
+	end
+
+	--- Renders a chunk
+	---@param chunk [string, string | nil]
+	local add = function (chunk)
+		if chunk then
+			local _c;
+
+			if vim.islist(chunk) and (vim.islist(chunk[1])) then
+				for _, mini_chunk in ipairs(chunk) do
+					local _e;
+
+					if #mini_chunk >= 2 then
+						_e = vim.api.nvim_eval_statusline(set_hl(mini_chunk[2], window) .. get_value(mini_chunk[1], window), { winid = window });
+
+						_t = _t .. set_hl(mini_chunk[2]) .. mini_chunk[1];
+						w = w + _e.width;
+					elseif type(mini_chunk[1]) == "string" then
+						_e = vim.api.nvim_eval_statusline(mini_chunk[1], { winid = window });
+
+						_t = _t .. mini_chunk[1];
+						w = w + _e.width;
+					end
+				end
+			elseif #chunk == 2 then
+				_c = vim.api.nvim_eval_statusline(set_hl(chunk[2]) .. chunk[1], { winid = window });
+
+				_t = _t .. set_hl(chunk[2]) .. chunk[1];
+				w = w + _c.width;
+			elseif type(chunk[1]) == "string" then
+				_c = vim.api.nvim_eval_statusline(chunk[1], { winid = window });
+
+				_t = _t .. chunk[1];
+				w = w + _c.width;
+			end
+		end
+	end
+
+	add(part.content);
+
+	if part.click then
+		_t = _t .. "%X";
+	end
+
+	return _t, w;
+end
+
+---@type bars.statuscolumn.config
 statuscolumn.configuration = {
-	default = {
+	parts = {
 		{ type = "sign" },
 		{
 			type = "fold",
-			add_clicks = true
+
+			markers = {
+				default = {
+					content = { "  " }
+				},
+				open = {
+					{ " ", "BarsStatuscolumnFold1" }, { " ", "BarsStatuscolumnFold2" }, { " ", "BarsStatuscolumnFold3" },
+					{ " ", "BarsStatuscolumnFold4" }, { " ", "BarsStatuscolumnFold5" }, { " ", "BarsStatuscolumnFold6" },
+				},
+				close = {
+					{ "╴", "BarsStatuscolumnFold1" }, { "╴", "BarsStatuscolumnFold2" }, { "╴", "BarsStatuscolumnFold3" },
+					{ "╴", "BarsStatuscolumnFold4" }, { "●╴", "BarsStatuscolumnFold5" }, { "◎╴", "BarsStatuscolumnFold6" },
+				},
+
+				scope = {
+					{ "│ ", "BarsStatuscolumnFold1" }, { "│ ", "BarsStatuscolumnFold2" }, { "│ ", "BarsStatuscolumnFold3" },
+					{ "│ ", "BarsStatuscolumnFold4" }, { "│ ", "BarsStatuscolumnFold5" }, { "│ ", "BarsStatuscolumnFold6" },
+				},
+				divider = {
+					{ "├╴", "BarsStatuscolumnFold1" }, { "├╴", "BarsStatuscolumnFold2" }, { "├╴", "BarsStatuscolumnFold3" },
+					{ "├╴", "BarsStatuscolumnFold4" }, { "├╴", "BarsStatuscolumnFold5" }, { "├╴", "BarsStatuscolumnFold6" },
+				},
+				foldend = {
+					{ "╰╼", "BarsStatuscolumnFold1" }, { "╰╼", "BarsStatuscolumnFold2" }, { "╰╼", "BarsStatuscolumnFold3" },
+					{ "╰╼", "BarsStatuscolumnFold4" }, { "╰╼", "BarsStatuscolumnFold5" }, { "╰╼", "BarsStatuscolumnFold6" },
+				}
+			},
 		},
-		{ type = "text", text = " " },
 		{
 			type = "number",
 			mode = "hybrid",
 
-			right_align = true,
-
-			virtnum = "",
-			virtnum_hl = "Title",
-
-			hl = function ()
-				if vim.v.relnum == 0 then
-					return "%#Title#";
-				end
-
-				return "%#LineNr#"
-			end
+			hl = "LineNr",
+			lnum_hl = "BarsStatusColumnNum",
+			relnum_hl = "LineNr",
+			virtnum_hl = "TablineSel",
+			wrap_hl = "TablineSel"
 		},
-		{ type = "text", text = " " },
 		{
-			type = "text",
-			text = "▏",
-			hl = function ()
-				if vim.v.relnum <= 7 then
-					return "%#Glow_" .. vim.v.relnum .. "#";
+			type = "custom",
+			value = { content = { " " } }
+		},
+		{
+			type = "custom",
+			value = function ()
+				if vim.v.relnum <= 8 then
+					return {
+						content = { "▎", "BarsStatusColumnGlow" .. (vim.v.relnum + 1) }
+					};
 				end
 
-				return "%#Glow_7#"
-			end
+				return {
+					content = { "▎", "BarsStatusColumnGlow9" }
+				};
+			end,
 		}
 	},
 
-	customs = {
+	custom = {
 		{
 			filetypes = {},
-			buftypes = {}
+			buftypes = { "terminal" },
+			parts = {}
 		}
 	}
 }
 
-statuscolumn.render_text = function (config_table)
-	local _o;
-
-	if type(config_table.hl) == "string" then
-		_o = utils.set_hl(config_table.hl);
-	elseif type(config_table.hl) == "function" and pcall(config_table.hl) then
-		_o = utils.set_hl(config_table.hl());
-	else
-		_o = "";
+--- Renders a custom part in the statuscolumn
+---@param config bars.statuscolumn.custom
+---@param buffer integer
+---@param window integer
+---@param len integer
+---@return string
+---@return integer
+statuscolumn.m_custom = function (config, buffer, window, len)
+	if type(config.value) == "table" then
+		return get_output(config.value --[[@as [string, string?] ]], window);
 	end
 
-	if type(config_table.text) == "string" then
-		_o = _o .. config_table.text
-	elseif type(config_table.text) == "function" and pcall(config_table.text) then
-		_o = _o .. config_table.text();
+	if not config.value or not pcall(config.value --[[@as function]], buffer, window, len) then
+		return "", 0;
 	end
 
-	return _o;
+	return get_output(config.value(buffer, window, len), window);
 end
 
-statuscolumn.render_number = function (buffer, config_table)
-	local _o = vim.v.lnum;
-	local max_num_len = vim.fn.strchars(vim.api.nvim_buf_line_count(buffer))
-
-	if config_table.mode == "hybrid" then
-		_o = tostring(vim.v.relnum == 0 and vim.v.lnum or vim.v.relnum);
-	elseif config_table.mode == "relative" then
-		_o = tostring(vim.v.relnum);
-	else
-		_o = tostring(vim.v.lnum);
-	end
-
-	if vim.v.virtnum < 0 then
-		_o = (type(config_table.virtnum_hl) == "string" and utils.set_hl(config_table.virtnum_hl) or "%#Comment#") .. (utils.text_out(config_table.virtnum) or _o);
-	else
-		_o = utils.set_hl(utils.text_out(config_table.hl)) .. _o;
-	end
-
-	return string.rep(" ", max_num_len - utils.get_len(_o)) .. _o;
-end
-
-statuscolumn.fold_clicks = function ()
-	vim.print("Hi")
-end
-
-statuscolumn.render_folds = function (window, buffer, config_table)
+--- Renders a foldcolumn
+---@param config_table bars.statuscolumn.fold
+---@param buffer integer
+---@param window integer
+---@return string
+---@return integer
+statuscolumn.m_fold = function (config_table, buffer, window)
+	-- Can't use window-ID directly, we need the handle
 	local handle = ffi.C.find_window_by_handle(window, nil);
 
+	-- Next line
 	local next_line = utils.clamp(vim.v.lnum + 1, 1, vim.api.nvim_buf_line_count(buffer));
 
-	local foldInfo_after = ffi.C.fold_info(handle, next_line);
+	-- Fold related information to compare
 	local foldInfo = ffi.C.fold_info(handle, vim.v.lnum);
+	local foldInfo_after = ffi.C.fold_info(handle, next_line);
 
-	local parts = vim.tbl_extend("keep", config_table.parts or {}, {
-		marker_open = { "" },
-		marker_close = { "" },
-
-		middle = { "│" },
-		bottom = { "╰" },
-
-		mix = { "┝" }
-	});
-	local hls = vim.tbl_extend("keep", config_table.hls or {}, {
-		marker_open = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" },
-		marker_close = { "rainbow1_dark", "rainbow2_dark", "rainbow3_dark", "rainbow4_dark", "rainbow5_dark", "rainbow6_dark" },
-
-		middle = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" },
-		bottom = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" },
-
-		mix = { "rainbow1", "rainbow2", "rainbow3", "rainbow4", "rainbow5", "rainbow6" }
-	});
-
-	local _f = " ";
+	local markers = config_table.markers;
 
 	if foldInfo.start == vim.v.lnum then
 		if vim.fn.foldclosed(vim.v.lnum) ~= -1 then
-			_f = utils.set_hl(utils.format_input(hls.marker_open, foldInfo.level)) .. utils.format_input(parts.marker_open, foldInfo.level);
+			-- Opened fold
+			return get_output({
+				content = utils.format_input(markers.open, foldInfo.level)
+			}, window);
 		elseif foldInfo_after.level >= foldInfo.level then
-			_f = utils.set_hl(utils.format_input(hls.marker_close, foldInfo.level)) .. utils.format_input(parts.marker_close, foldInfo.level);
+			-- Closed fold
+			return get_output({
+				content = utils.format_input(markers.close, foldInfo.level)
+			}, window);
 		elseif foldInfo_after.level >= 1 then
-			_f = utils.set_hl(utils.format_input(hls.middle, foldInfo.level)) .. utils.format_input(parts.middle, foldInfo.level);
-		end
-
-		if config_table.add_clicks == true then
-			_f = "%@v:lua.bars_n_lines.handle_folds@" .. _f
+			-- Inside a fold
+			return get_output({
+				content = utils.format_input(markers.scope, foldInfo.level)
+			}, window);
 		end
 	elseif foldInfo.start ~= foldInfo_after.start and foldInfo.level >= foldInfo_after.level then
 		if (foldInfo_after.level == 0 or (next_line == foldInfo_after.start and foldInfo_after.level <= vim.o.foldlevelstart)) and foldInfo.level >= foldInfo_after.level then
-			_f = utils.set_hl(utils.format_input(hls.bottom, foldInfo.level)) .. utils.format_input(parts.bottom, foldInfo.level);
+			-- End of fold
+			return get_output({
+				content = utils.format_input(markers.foldend, foldInfo.level)
+			}, window);
 		else
-			_f = utils.set_hl(utils.format_input(hls.mix, foldInfo.level)) .. utils.format_input(parts.mix, foldInfo.level);
+			-- Nested fold end
+			return get_output({
+				content = utils.format_input(markers.divider, foldInfo.level)
+			}, window);
 		end
 	elseif foldInfo.level > 0 then
 		if next_line == vim.v.lnum then
-			_f = utils.set_hl(utils.format_input(hls.bottom, foldInfo.level)) .. utils.format_input(parts.bottom, foldInfo.level);
+			-- End of fold
+			return get_output({
+				content = utils.format_input(markers.foldend, foldInfo.level)
+			}, window);
 		else
-			_f = utils.set_hl(utils.format_input(hls.middle, foldInfo.level)) .. utils.format_input(parts.middle, foldInfo.level);
+			-- Inside a fold
+			return get_output({
+				content = utils.format_input(markers.scope, foldInfo.level)
+			}, window);
 		end
 	end
 
-	return _f;
+	return get_output(markers.default, window);
 end
 
-statuscolumn.render_signs = function (buffer, config_table)
-	local signs = utils.sort_by_priority(vim.api.nvim_buf_get_extmarks(buffer, -1, { vim.v.lnum - 1, 0 }, { vim.v.lnum - 1, -1 }, { type = "sign", details = true }), config_table.min_priority);
+--- Renders a sign column
+---@param config_table bars.statuscolumn.sign
+---@param buffer integer
+---@param window integer
+---@return string
+---@return integer
+statuscolumn.m_signs = function (config_table, buffer, window)
+	local signs = utils.sort_by_priority(
+		vim.api.nvim_buf_get_extmarks(buffer,
+			-1,
+			{ vim.v.lnum - 1, 0 },
+			{ vim.v.lnum - 1, -1 },
+			{
+				type = "sign",
+				details = true
+			}
+		),
+		config_table.min_priority
+	);
 
 	if signs and signs[1] and signs[1][4] and signs[1][4].sign_text then
-		return "%#" .. signs[1][4].sign_hl_group .. "#" .. signs[1][4].sign_text
+		return get_output({
+			content = {
+				signs[1][4].sign_text,
+				signs[1][4].sign_hl_group
+			}
+		}, window);
 	end
 
-	return "  ";
+	return "  ", 2;
 end
 
+--- Renders a number column
+---@param config_table bars.statuscolumn.number
+---@param buffer integer
+---@param window integer
+---@return string
+---@return integer
+statuscolumn.m_num = function (config_table, buffer, window)
+	local max_num_len = math.max(2, vim.fn.strchars(vim.api.nvim_buf_line_count(buffer)))
+
+	if config_table.mode == "absolute" then
+		return get_output({
+			content = { string.format("%+" .. max_num_len .. "s", tostring(vim.v.lnum)), config_table.lnum_hl or config_table.hl }
+		}, window);
+	elseif config_table.mode == "relative" then
+		return get_output({
+			content = { string.format("%+" .. max_num_len .. "s", tostring(vim.v.relnum)), config_table.relnum_hl or config_table.hl }
+		}, window);
+	else
+		if vim.v.virtnum == 0 then
+			if vim.v.relnum == 0 then
+				return get_output({
+					content = { string.format("%+" .. max_num_len .. "s", tostring(vim.v.lnum)), config_table.lnum_hl or config_table.hl }
+				}, window);
+			else
+				return get_output({
+					content = { string.format("%+" .. max_num_len .. "s", tostring(vim.v.relnum)), config_table.relnum_hl or config_table.hl }
+				}, window);
+			end
+		elseif vim.v.virtnum < 0 then
+			-- Virtual line
+			return get_output({
+				content = { string.rep(" ", max_num_len), config_table.virtnum_hl or config_table.hl }
+			}, window);
+		else
+			-- Wrapped line
+			return get_output({
+				content = { string.rep(" ", max_num_len), config_table.wrap_hl or config_table.hl }
+			}, window);
+		end
+	end
+end
+
+--- Draws the statuscolumn
+---@param window integer
+---@param buffer integer
+---@return string
 statuscolumn.draw = function (window, buffer)
 	local conf = utils.find_config(statuscolumn.configuration, buffer);
-	local _col = "";
+	local texts, len = { "%#LineNr#"}, 0;
 
 	for _, part in ipairs(conf) do
-		if part.type == "text" then
-			_col = _col .. statuscolumn.render_text(part);
-		elseif part.type == "number" then
-			_col = _col .. statuscolumn.render_number(buffer, part);
+		local tmp, tmp_len = nil, 0;
+
+		if part.type == "number" then
+			tmp, tmp_len = statuscolumn.m_num(part, buffer, window);
 		elseif part.type == "fold" then
-			_col = _col .. statuscolumn.render_folds(window, buffer, part);
+			tmp, tmp_len = statuscolumn.m_fold(part, buffer, window);
 		elseif part.type == "sign" then
-			_col = _col .. statuscolumn.render_signs(buffer, part);
+			tmp, tmp_len =  statuscolumn.m_signs(part, buffer, window);
+		elseif part.type == "custom" then
+			tmp, tmp_len =  statuscolumn.m_custom(part, buffer, window, len);
+		end
+
+		if tmp then
+			if part.id then
+				table.insert(texts, part.id);
+			else
+				table.insert(texts, tmp);
+			end
+
+			len = len + (tmp_len or 0);
 		end
 	end
 
-	return _col;
+
+	-- Fix holes in the array
+	local tmp_txt = {};
+
+	for _, val in pairs(texts) do
+		table.insert(tmp_txt, val);
+	end
+
+	texts = tmp_txt;
+
+	return table.concat(texts)
 end
 
-statuscolumn.init = function (buffer, window, config_table)
+--- Initializes the statuscolumn
+---@param window integer
+---@param buffer integer
+statuscolumn.init = function (buffer, window)
 	vim.wo[window].relativenumber = true; -- Redraw on cursor
 
 	vim.wo[window].foldcolumn = "0";
@@ -207,8 +401,20 @@ statuscolumn.init = function (buffer, window, config_table)
 	vim.wo[window].statuscolumn = "%!v:lua.require('bars.statuscolumn').draw(" .. window .. "," .. buffer .. ")"
 end
 
+--- Disables the statuscolumn
+---@param window integer
 statuscolumn.disable = function (window)
 	vim.wo[window].statuscolumn = "";
+end
+
+--- Sets up the statuscolumn
+---@param config table?
+statuscolumn.setup = function (config)
+	if type(config) ~= "table" then
+		return;
+	end
+
+	statuscolumn.configuration = vim.tbl_deep_extend("force", statuscolumn.configuration, config);
 end
 
 return statuscolumn;

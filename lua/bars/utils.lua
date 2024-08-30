@@ -20,14 +20,14 @@ utils.find_config = function (config, buf)
 	if config.custom then
 		for _, custom in ipairs(config.custom) do
 			if vim.islist(custom.filetypes) and vim.list_contains(custom.filetypes, filetype) then
-				return custom
+				return custom.parts;
 			elseif vim.islist(custom.buftypes) and vim.list_contains(custom.buftypes, buftype) then
-				return custom
+				return custom.parts;
 			end
 		end
 	end
 
-	return config.default or {};
+	return config.default or config.parts or {};
 end
 
 ---@param hl string
@@ -98,9 +98,12 @@ utils.create_truncated_segmants = function (segmants, max_size)
 	local _o = "";
 
 	for _, segmant in ipairs(segmants) do
-		local pad_after = vim.fn.strchars(segmant.padding_right or "");
 		local cor_after = vim.fn.strchars(segmant.corner_right or "");
-		--
+
+		if max_size - size <= vim.fn.strchars((segmant.corner_left or "") .. (segmant.corner_right or "")) then
+			goto notEnoughSpace;
+		end
+
 		if segmant.before then
 			_o = _o .. segmant.before;
 		end
@@ -110,8 +113,8 @@ utils.create_truncated_segmants = function (segmants, max_size)
 				_o = _o .. utils.set_hl(segmant.corner_left_hl);
 			end
 
-			_o = _o .. utils.truncate(segmant.corner_left, max_size - (size + (pad_after + cor_after)));
-			size = size + vim.fn.strchars(utils.truncate(segmant.corner_left, max_size - (size + (pad_after + cor_after))));
+			_o = _o .. segmant.corner_left;
+			size = size + vim.fn.strchars(segmant.corner_left);
 		end
 
 		if segmant.padding_left then
@@ -119,8 +122,8 @@ utils.create_truncated_segmants = function (segmants, max_size)
 				_o = _o .. utils.set_hl(segmant.padding_left_hl);
 			end
 
-			_o = _o .. utils.truncate(segmant.padding_left, max_size - (size + (pad_after + cor_after)));
-			size = size + vim.fn.strchars(utils.truncate(segmant.padding_left, max_size - (size + (pad_after + cor_after))));
+			_o = _o .. utils.truncate(segmant.padding_left, max_size - (size + (cor_after)));
+			size = size + vim.fn.strchars(utils.truncate(segmant.padding_left, max_size - (size + (cor_after))));
 		end
 
 		if segmant.icon then
@@ -128,8 +131,8 @@ utils.create_truncated_segmants = function (segmants, max_size)
 				_o = _o .. utils.set_hl(segmant.icon_hl);
 			end
 
-			_o = _o .. utils.truncate(segmant.icon, max_size - (size + (pad_after + cor_after)));
-			size = size + vim.fn.strchars(utils.truncate(segmant.icon, max_size - (size + (pad_after + cor_after))));
+			_o = _o .. utils.truncate(segmant.icon, max_size - (size + (cor_after)));
+			size = size + vim.fn.strchars(utils.truncate(segmant.icon, max_size - (size + (cor_after))));
 		end
 
 		if segmant.text then
@@ -137,8 +140,8 @@ utils.create_truncated_segmants = function (segmants, max_size)
 				_o = _o .. utils.set_hl(segmant.text_hl);
 			end
 
-			_o = _o .. utils.truncate(segmant.text, max_size - (size + (pad_after + cor_after)));
-			size = size + vim.fn.strchars(utils.truncate(segmant.text, max_size - (size + (pad_after + cor_after))));
+			_o = _o .. utils.truncate(segmant.text, max_size - (size + (cor_after)));
+			size = size + vim.fn.strchars(utils.truncate(segmant.text, max_size - (size + (cor_after))));
 		end
 
 		if segmant.padding_right then
@@ -147,7 +150,7 @@ utils.create_truncated_segmants = function (segmants, max_size)
 			end
 
 			_o = _o .. utils.truncate(segmant.padding_right, max_size - size);
-			size = size + vim.fn.strchars(segmant.padding_right);
+			size = size + vim.fn.strchars(utils.truncate(segmant.padding_right, max_size - (size + (cor_after))));
 		end
 
 		if segmant.corner_right then
@@ -158,6 +161,8 @@ utils.create_truncated_segmants = function (segmants, max_size)
 			_o = _o .. utils.truncate(segmant.corner_right, max_size - size);
 			size = size + vim.fn.strchars(segmant.corner_right);
 		end
+
+		::notEnoughSpace::
 	end
 
 	return _o;

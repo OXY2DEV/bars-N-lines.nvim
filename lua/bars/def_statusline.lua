@@ -1,0 +1,164 @@
+---@meta
+
+--- Configuration table for the statusline
+---@class bars.statusline.config
+---
+--- Enables/Disables the statusline
+---@field enable? boolean
+---
+--- List of parts to use
+---@field parts (bars.statusline.config.mode | bars.statusline.config.bufname | bars.statusline.config.gap | bars.statusline.config.ruler | bars.statusline.config.diagnostic | bars.statusline.config.custom | bars.statusline.config.git)[]
+
+--+ ${class, A segment for the statusline}
+--- Configuration table for a segment
+---@class bars.statusline.segment
+---
+--- Click handler for the segment
+---@field click? (string | function)
+---
+---@field corner_left? [string, string | nil]
+---
+---@field padding_left? [string, string | nil]
+---
+---@field content? (string | [string, string?])[]
+---
+---@field padding_right? [string, string | nil]
+---
+---@field corner_right? [string, string | nil]
+---
+--- Text to match
+---@field match? string
+---
+--- Highlight group used in certain scenarios
+---@field hl? string
+---
+---
+---@field path_hl? string
+---@field path_leader_hl? string
+---@field icon_hl? string
+---@field name_hl? string
+--_
+
+--+ ${class, Shows current mode}
+--- Configuration table for the mode previewer
+---@class bars.statusline.config.mode
+---
+--- Part type
+---@field type "mode"
+---
+--- Default config
+---@field default bars.statusline.segment
+---
+--- Config for various modes
+---@field modes? bars.statusline.segment[]
+--_
+
+--+ ${class, Shows buffer name}
+--- Configuration table for the buffer name previewer
+---@class bars.statusline.config.bufname
+---
+--- Part type
+---@field type "bufname"
+---
+--- Default config
+---@field default bars.statusline.segment
+---
+--- Config for various filename extensions
+---@field extensions? bars.statusline.segment[]
+--_
+
+--+ ${class, Shows diagnostic}
+--- Configuration table for the diagnostic previewer
+---@class (exact) bars.statusline.config.diagnostic
+---
+--- Part type
+---@field type "diagnostic"
+---
+--- Mode for the diagnostics previewer
+---@field mode? (number | fun(buffer: number): number)
+---
+--- Icon for INFO diagnostics
+---@field info? string
+---
+--- Highlight group for INFO diagnostics
+---@field info_hl? string
+---
+--- Icon for HINT diagnostics
+---@field hint? string
+---
+--- Highlight group for HINT diagnostics
+---@field hint_hl? string
+---
+--- Icon for WARN diagnostics
+---@field warn? string
+---
+--- Highlight group for WARN diagnostics
+---@field warn_hl? string
+---
+--- Icon for ERROR diagnostics
+---@field error? string
+---
+--- Highlight group for ERROR diagnostics
+---@field error_hl? string
+--_
+
+--+ ${class, Adds a gap}
+--- Configuration table for the gap
+---@class bars.statusline.config.gap
+---
+--- Part type
+---@field type "gap"
+---
+--- Highlight group for the gap
+---@field hl? string
+--_
+
+--+ ${class, Shows the git branch}
+--- Configuration table for the git branch
+---@class bars.statusline.config.git
+---
+--- Part type
+---@field type "git_branch"
+---
+--- Default config
+---@field default bars.statusline.segment
+---
+--- Config for various branch name patterns
+---@field branches? bars.statusline.segment[]
+--_
+
+--+ ${class, Shows the ruler}
+--- Configuration table for the ruler
+---@class bars.statusline.config.ruler
+---
+--- Part type
+---@field type "ruler"
+---
+--- Max number of modes to show
+---@field modes? number
+---
+--- Highlight group for the ruler
+---@field hl? string
+---
+--- Highlight group for the ruler separator
+---@field sep_hl? string
+---
+--- Number of parts to use for visualization
+---@field max_len number
+---
+--- Parts for visualization
+---@field parts table
+--_
+
+--+ ${class, Shows a custom part}
+--- Configuration table for custom parts
+---@class bars.statusline.config.custom
+---
+--- Part type
+---@field type "custom"
+---
+--- Part type
+---@field value fun(buffer: number, window: number, len: number): string, integer
+--_
+
+
