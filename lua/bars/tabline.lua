@@ -172,15 +172,30 @@ tabline.m_bufs = function (config, len)
 	local current = vim.api.nvim_get_current_buf();
 
 	local count = config.max_count or 5;
+	local tmpBufs = {};
+
+	for _, buffer in ipairs(bufs) do
+		local nm = vim.api.nvim_buf_get_name(buffer);
+
+		for _, pattern in ipairs(config.ignore) do
+			if pattern ~= "" and nm:match(pattern) then
+				goto continue;
+			elseif nm == "" then
+				goto continue;
+			end
+		end
+
+		table.insert(tmpBufs, buffer);
+		::continue::
+	end
+
+	bufs = tmpBufs;
 
 	-- From where we should list buffers?
 	local rangeStart = storage.get("tabline", "bufViewStart");
 
 	-- Get where to start the range
 	if not rangeStart then
-		rangeStart = 1;
-		storage.set("tabline", "bufViewStart", 1);
-	elseif (#bufs - rangeStart) <= count then
 		rangeStart = 1;
 		storage.set("tabline", "bufViewStart", 1);
 	elseif rangeStart >= #bufs then
@@ -296,10 +311,6 @@ tabline.m_bufs = function (config, len)
 
 	-- Create a list of buffers to show
 	for b, buf in ipairs(bufs) do
-		if vim.list_contains(config.ignore or {}, vim.api.nvim_buf_get_name(buf)) then
-			goto continue;
-		end
-
 		if #bufs >= count then
 			-- Not enough space
 			if buf == current then
