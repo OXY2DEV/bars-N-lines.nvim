@@ -3,6 +3,7 @@ local icons = {};
 icons.default = "󱀶 ";
 
 icons.by_name = {
+	["COMMIT_EDITMSG"] = "󰊢 "
 };
 
 icons.by_ft= {
@@ -65,7 +66,13 @@ icons.get = function (name)
 	if icons.by_ft[ft or ext] then
 		return icons.by_ft[ft or ext];
 	else
-		return "";
+		for pattern, value in pairs(icons.by_name) do
+			if name:match(pattern) then
+				return value;
+			end
+		end
+
+		return icons.default;
 	end
 end
 

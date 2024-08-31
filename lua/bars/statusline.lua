@@ -8,7 +8,7 @@ local statusline = {};
 ---@param segment string
 ---@param len integer?
 ---@return string
-local truncate_segmant = function (segment, len)
+local truncate_segment = function (segment, len)
 	if segment:match("^%.") then
 		return vim.fn.strcharpart(segment, 0, (len or 1) + 1);
 	else
@@ -31,7 +31,7 @@ local set_hl = function (group_name)
 	end
 end
 
---- Turns a segmant into a usable part in the statusline
+--- Turns a segment into a usable part in the statusline
 ---@param part any
 ---@param window integer
 ---@return string
@@ -168,6 +168,10 @@ statusline.config = {
 					vim.cmd("redraws");
 				end
 			}
+		},
+		{
+			type = "terminal",
+			hl = "Comment"
 		},
 		{
 			type = "diagnostic",
@@ -397,13 +401,16 @@ end
 
 --- Renders current branch name
 ---@param config bars.statusline.config.git
+---@param buffer integer
 ---@param window integer
 ---@return string
 ---@return integer
-statusline.m_git_branch = function (config, window)
+statusline.m_git_branch = function (config, buffer, window)
+	local path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buffer), ":h");
+
 	-- Gets the current branch
-	local git = vim.fn.system("git rev-parse --abbrev-ref HEAD");
-	git = git:gsub("[^%a]*", "");
+	local git = vim.fn.system("git -C " .. path .. " rev-parse --abbrev-ref HEAD");
+	git = git:gsub("%c", "");
 
 	if git:match("^fatal") then
 		return "", 0;
@@ -424,6 +431,22 @@ statusline.m_git_branch = function (config, window)
 	end
 end
 
+statusline.m_term = function (config, buffer, window)
+	local bufname = vim.api.nvim_buf_get_name(buffer);
+
+	if not bufname:match("^term://") then
+		return "", 0;
+	end
+
+	local pid = bufname:match("//(%d+)");
+
+	return get_output({
+		padding_left = { "  ", config.padding_left_hl or config.hl },
+
+		content = { tostring(pid), config.hl }
+	}, window);
+end
+
 --- Renders buffer name
 ---@param config bars.statusline.config.bufname
 ---@param buffer integer
@@ -434,11 +457,22 @@ statusline.m_bn = function (config, buffer, window)
 	local bufname = vim.api.nvim_buf_get_name(buffer);
 	local icon = icons.get(bufname);
 
-	-- Handle special names that aren't file
+	-- Handle special names that aren't files
 	if vim.fn.filereadable(bufname) == 0 then
 		if bufname == "" then
 			return get_output({
 				padding_right = { "" },
+				corner_right = { "", "BarsStatuslineBufSep" }
+			}, window);
+		elseif bufname:match("^term://") then
+			local term = vim.fn.fnamemodify(bufname, ":t");
+
+			return get_output({
+				padding_left = { " ", "BarsStatuslineBuf" },
+
+				content = { icons.get(term) .. term .. " " },
+
+				padding_right = { "" },
 				corner_right = { "", "BarsStatuslineBufSep" }
 			}, window);
 		end
@@ -469,17 +503,17 @@ statusline.m_bn = function (config, buffer, window)
 			tmp = tmp:gsub("/$", "");
 
 			while bufname:match("/?([^/]-)$") do
-				local segmant = bufname:match("/?([^/]-)$");
+				local segment = bufname:match("/?([^/]-)$");
 
-				if tmp:match(segmant .. "$") then
-					table.insert(short_path, { truncate_segmant(segmant) .. "/", conf.path_hl })
+				if tmp:match(segment .. "$") then
+					table.insert(short_path, { truncate_segment(segment) .. "/", conf.path_hl })
 
-					bufname = bufname:gsub(segmant, "");
+					bufname = bufname:gsub(segment, "");
 					bufname = bufname:gsub("/$", "");
-					tmp = tmp:gsub(segmant, "");
+					tmp = tmp:gsub(segment, "");
 					tmp = tmp:gsub("/$", "");
 				else
-					table.insert(short_path, { truncate_segmant(segmant) .. "/", conf.path_leader_hl })
+					table.insert(short_path, { truncate_segment(segment) .. "/", conf.path_leader_hl })
 
 					break;
 				end
@@ -520,12 +554,6 @@ statusline.m_mode = function (config, window)
 	return get_output(conf, window);
 end
 
-
-
-
-
-
-
 --- Draws the statusline
 ---@param buffer integer
 ---@param window integer
@@ -542,13 +570,15 @@ statusline.draw = function (buffer, window)
 		elseif part.type == "bufname" then
 			tmp, tmp_len = statusline.m_bn(part, buffer, window);
 		elseif part.type == "git_branch" then
-			tmp, tmp_len = statusline.m_git_branch(part, window);
+			tmp, tmp_len = statusline.m_git_branch(part, buffer, window);
 		elseif part.type == "gap" then
 			tmp, tmp_len = statusline.m_gap(part);
 		elseif part.type == "ruler" then
 			tmp, tmp_len = statusline.m_ruler(part, buffer, window);
 		elseif part.type == "diagnostic" then
 			tmp, tmp_len = statusline.m_diagnostics(part, buffer, window);
+		elseif part.type == "terminal" then
+			tmp, tmp_len = statusline.m_term(part, buffer, window);
 		elseif part.type == "custom" then
 			tmp, tmp_len = statusline.m_custom(part, buffer, window, len)
 		end
