@@ -161,16 +161,20 @@ statuscolumn.configuration = {
 		},
 		{
 			type = "custom",
-			value = function ()
-				if vim.v.relnum <= 8 then
+			value = function (_, win)
+				if vim.api.nvim_get_current_win() ~= win then
+					return {
+						content = { "▎", "BarsStatusColumnGlow9" }
+					};
+				elseif vim.v.relnum <= 8 then
 					return {
 						content = { "▎", "BarsStatusColumnGlow" .. (vim.v.relnum + 1) }
 					};
+				else
+					return {
+						content = { "▎", "BarsStatusColumnGlow9" }
+					};
 				end
-
-				return {
-					content = { "▎", "BarsStatusColumnGlow9" }
-				};
 			end,
 		}
 	},

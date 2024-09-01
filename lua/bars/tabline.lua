@@ -177,6 +177,10 @@ tabline.m_bufs = function (config, len)
 	for _, buffer in ipairs(bufs) do
 		local nm = vim.api.nvim_buf_get_name(buffer);
 
+		if vim.api.nvim_buf_is_loaded(buffer) == false then
+			goto continue;
+		end
+
 		for _, pattern in ipairs(config.ignore) do
 			if pattern ~= "" and nm:match(pattern) then
 				goto continue;
@@ -308,38 +312,31 @@ tabline.m_bufs = function (config, len)
 
 	local bufAdded = 0;
 	local currAdded = false;
+	local sorted = {};
 
-	-- Create a list of buffers to show
 	for b, buf in ipairs(bufs) do
 		if #bufs >= count then
-			-- Not enough space
 			if buf == current then
-				render(true, buf, get_name(vim.api.nvim_buf_get_name(buf)))
-
+				table.insert(sorted, 1, { buf, true });
 				currAdded = true;
-				bufAdded = bufAdded + 1;
 			elseif b >= rangeStart and bufAdded < count then
 				if currAdded == true and bufAdded < count then
-					render(false, buf, get_name(vim.api.nvim_buf_get_name(buf)))
-
-					bufAdded = bufAdded + 1;
+					table.insert(sorted, 1, { buf, false });
 				elseif currAdded == false and bufAdded < (count - 1) then
-					render(false, buf, get_name(vim.api.nvim_buf_get_name(buf)))
-
-					bufAdded = bufAdded + 1;
+					table.insert(sorted, { buf, false });
 				end
 			end
 		else
 			if buf == current then
-				render(true, buf, get_name(vim.api.nvim_buf_get_name(buf)))
+				table.insert(sorted, { buf, true });
 			else
-				render(false, buf, get_name(vim.api.nvim_buf_get_name(buf)))
+				table.insert(sorted, { buf, false });
 			end
-
-			bufAdded = bufAdded + 1;
 		end
+	end
 
-		::continue::
+	for _, sr in ipairs(sorted) do
+		render(sr[2], sr[1], get_name(vim.api.nvim_buf_get_name(sr[1])))
 	end
 
 	return _o, 0;
