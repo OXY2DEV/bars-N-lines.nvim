@@ -15,7 +15,7 @@ set statusline?
 ```
 
 >[!IMPORTANT]
-> From this point on when I say **stausline** I also refer to the other items listed above(unless otherwise stated).
+> From this point on when I say **statusline** I also refer to the other items listed above(unless otherwise stated).
 
 You will see a string being printed. This is what the statusline *actually* looks like.
 
