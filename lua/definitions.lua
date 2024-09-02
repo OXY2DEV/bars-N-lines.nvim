@@ -19,6 +19,9 @@
 --- Configuration tale for the plugin
 ---@class bars.config
 ---
+--- Highlight groups
+---@field highlight_groups? table[]
+---
 ---@field exclude_filetypes? string[]
 ---@field exclude_buftypes? string[]
 ---
