@@ -1,289 +1,113 @@
 # 🎇 bars-N-lines.nvim
 
-Custom statuscolumn, statusline & tabline for `neovim`.
+An example *bars & lines* plugin for `Neovim`.
 
-Features:
-- Highly customisable statuscolumn, statusline & tabline.
-- Custom fold column
-- Custom sign column(with resize support when there are no signs)
-- Buffer list/window list on tabline
-- Click functionality on buffer names & tab numbers in tabline
-- Built for small screens(e.g. mobile)
-
-> 🎨 Color utility features
-- Functions to turn `hex` & `rgb` colors into tables
-- Built-in gradient generator function
-- Various easing options for creating gradients
+![statuscolumn](https://github.com/OXY2DEV/bars-N-lines.nvim/blob/images/Main/statuscolumn.gif)
+![statusline](https://github.com/OXY2DEV/bars-N-lines.nvim/blob/images/Main/statusline.gif)
+![tabline](https://github.com/OXY2DEV/bars-N-lines.nvim/blob/images/Main/tabline.gif)
 
 >[!NOTE]
-> This plugin is meant for personal use case and as such **WILL** go through breaking changes quite often.
+> This plugin is in an *active development phase*. Breaking changes may occur.
 
-## Usage <!-- -+ -->
+>[!WARNING]
+> This is not meant for usage in your config. This plugin just shows how to configure various bars & lines.
 
-For setting up the plugin you can just call `require("bars").setup()`.
+**🚨 The problem:**
 
-The setup function with all of the available options is given below.
+When I first started learning to use Neovim, I would use plugin(s) to decorate my statusline, statuscolumn, tabline etc.
+
+This unfortunately came with some drawbacks,
+
+- Most of these plugins were made for **desktop** so for obvious reasons didn't work well on a **phone**.
+- Sometimes I will see a *feature* I like, bit then realize that the plugin I use doesn't support them.
+- Sometimes the *defaults* don't work due to insufficient screen space.
+- Other times the plugin doesn't have much configuration option(s).
+- Parts/Segments creating the bars & lines have no way to communicate with each other. So, I can't have a dynamically set statusline/statuscolumn/tabline.
+- Adding features on a code-base you have no idea about is hard, especially if you are new(like me) etc.
+
+I also encountered performance issues and *some* minor inconvenience when using these plugins.
+
+So, I tried trying to manually create the statusline/statuscolumn etc. and realized that there's not much tutorial on this topic.
+
+I only found 1 tutorial that *actually* covered the basics instead of just slapping a few code blocks.
+
+**💡 What does this repo do:**
+
+This repo is a simple *example* plugin that shows implementation of the commonly used parts in various bars & lines plugins.
+
+Now, you no longer have to be like me and spend literal *hours*(or days in some cases) just to implement these without any plugins.
+
+I am trying to make this as easy to understand as possible and hope that this will come in handy to anyone who wants to learn about this.
+
+## ✨ Features
+
+- 🪪 ID system for segments. Segments can now be rendered based on their ID. This means you can use data from one segment to affect another one without hacking the plugin.
+- 📏 Consistent segments. All segments have similar structure to make configuration more consistent.
+- 📐 Automatically calculates the length of segments. This is useful for custom segments on smaller screens as this can be used to ensure that nothing overflows.
+- 💬 Simple structure. The plugin is much simpler than all the other similar plugins to help noobs like *me* to understand how things work.
+- 📊 Performant(even on mobile). Due to it's limited scope & simple design it's relatively faster in most cases.
+- 📦 No external dependencies. No more needing to install 3 plugins just to get a simple statusline.
+- 📱 Mobile first. Made on a mobile, made for a mobile.
+- 🪷 Fully customisable fold column. Supports **per level** customisation too!
+- 🎉 Touch support! Supports clicks in statusline & tabline(for now).
+
+And much more!
+
+## 📦 Installation
+
+### 💤 Lazy.nvim
+
+For `plugins.lua` or `lazy.lua` users,
 
 ```lua
-require("bars").setup({
-    global_disable = {
-        filetypes = {},
-        buftypes = {}
-    },
+{
+    "OXY2DEV/bars-N-lines.nvim",
+    -- No point in lazy loading this
+    lazy = false
+}
+```
 
-    default = {
-        statuscolumn = {
-            enable = true,
-            options = {}
-        },
-        statusline = {
-            enable = true,
-            options = {}
-        },
+For `plugins/bars.lua` users.
 
-        tabline = {
-            enable = true,
-            options = {}
-        }
-    },
+```lua
+return {
+    "OXY2DEV/bars-N-lines.nvim",
+    lazy = false
+}
+```
 
-    custom_configs = {}
+### 🦠 Mini.deps
+
+```lua
+local MiniDeps = require("mini.deps");
+
+MiniDeps.add({
+    source = "OXY2DEV/bars-N-lines.nvim"
 });
 ```
 
->[!NOTE]
-> For getting colors you also need to call the `utility module`.
-> ```lua
-> require("bars.colors").setup();
-> ```
-> This is done to reduce load time as things like gradients can take a bit of time.
-> You can also set `highlight groups` to show a different color based on the current colorscheme.
+### 🌘 Rocks.nvim
 
-Here's what all of them do,
+> Not yet ready.
 
-### global_disable <!-- -+ -->
-`{ filetypes: string[], buftypes: string[] } or nil`
+```vim
+:Rocks install bars-N-lines.nvim
+```
 
-You can set specific filetypes and buftypes where the plugin will be *disabled*.
-
->[!NOTE]
-> On buffers where the plugin is disabled the `statuscolumn`, `statusline` & `tabline` will not be set.
->
-> If you would like to *hide* them for a specific buffer use the `custom_configs` option.
-
-<!-- -_ -->
-
-### default <!-- -+ -->
-`{ statuscolumn: statuscolumn_config?, statusline: statusline_config?, tabline: tabline_config? }`
-
-Default configuration of the plugin. More info on the various keys of this table is provided in their own sections.
-
->[!IMPORTANT]
-> When using the `custom_configs` options, options that are not set will be *inherited* from the `default` option.
->
-> So, if you only set the `statusline` for a buffer the `statuscolumn` & `tabline` will be configured using the values in the `default` table.
-
-<!-- -_ -->
-
-### custom_configs <!-- -+ -->
-`{ { buftypes: string[]?, filetypes: string[]?, config: default }[] } or nil`
-
-Custom configuration table for specific filetypes & buftypes. Inherits values from the `default` table.
-
->[!NOTE]
-> If `filetypes` & `buftypes` are set together then the plugin will try to match both of them first and then will match them individually.
->
-> This currently **has no extra functionality** and an option will be provided to better control this behaviour.
-
-<!-- -_ -->
-
-## Disabling the plugin on certain filetypes & buftypes <!-- -+ -->
-
-The `global_disable` option has the following keys,
-- filetypes
-- buftypes
-
->[!NOTE]
-> On skipped buffers the values of `statuscolumn`, `statusline` will not be set. So, their default value will be used.
-
-### filetypes
-`string[]`
-
-A list of filetypes that will be skipped.
-
->[!IMPORTANT]
-> Buffers are updated when their `filetype` changes. So, you don't need to do something like `filetypes = { "" }`.
-
-<!-- -_ -->
-
-## Setting the statuscolumn <!-- -+ -->
-
-The `statuscolumn` is one of the keys available in the `default`(and in the items in `custom_configs`). This can be used to set up a custom statuscolumn.
-
-The statuscolumn table with all the available options is given below.
+## 🧩 Setup
 
 ```lua
 {
-    enable = true,
-    options = {
-        set_defaults = false,
-        default_hl = nil,
+    exclude_filetypes = {},
+    exclude_buftypes = {},
 
-        components = {}
-    }
+    statuscolumn = true,
+    statusline = true,
+    tabline = true
 }
 ```
 
-### enable
-`boolean or nil`
-
-Enables/Disables the statuscolumn.
-
-### Options
-`{ set_defaults: boolean?, default_hl: string?, components: table[] }`
-
-The options used to configure the statuscolumn.
-
-#### set_defaults
-`boolean or nil`
-
-Sets the default options for making the statuscolumn. It sets the following options,
-- relativenumber(for refresh on cursor move)
-- foldcolumn(set to 0, because the plugin doesn't make use of the default one)
-- signcolumn(set to "no", because the plugin has it's own functions for showing signs)
-- numberwidth(set to 1, prevents a mouse click bug in 0.10.0)
-
-#### default_hl
-`string or nil`
-
-Useful for changing the background color for the statuscolumn. Also removes the `cursorline` highlight in the statuscolumn.
-
-#### components
-`table[]`
-
-Components are used to easily add functionalities to the statuscolumn without having to write the code yourself. You can set a list of components to use in the statuscolumn.
-
-Currently available components are.
-- gap `Adds a simple gap in the statuscolumn, allows setting a custom highlight for the gap`
-- border `Adds border in the statuscolumn, optionally supports gradients`
-- number `Adds line numbers & relative line numbers to the statuscolumn, optionally supports gradients`
-- fold `Adds a custom foldcolumn, provides various ways to show folds`
-- sign `Adds a custom signcolumn, allows filtering of signs based on namespaces & priority`
-
->[!NOTE]
-> Function as components will be added in the future allowing users to make custom components for their needs.
-
-More information on the components are available in their own files.
-
-<!-- -_ -->
-
-## Setting the statusline <!-- -+ -->
-
-Just like the `statuscolumn`, the `statusline` can also be set in the configuration table.
-
-The statusline table with all the available options is given below.
-
-```lua
-{
-    enable = true,
-    options = {
-        set_defaults = false,
-        default_hl = nil,
-
-        components = {}
-    }
-}
-```
-
-### enable
-`boolean or nil`
-
-Enables/Disables the statusline.
-
-### Options
-`{ set_defaults: boolean?, default_hl: string?, components: table[] }`
-
-The options used to configure the statusline.
-
-#### set_defaults
-`boolean or nil`
-
-Sets some default options for the statusline.
-
-The following options are set.
-- laststatus(set to 2, to use buffer specific statusline)
-- cmdheight(set to 1, to prevent a bug in neovim leading the statusline to temporarily disappear)
-
-#### default_hl
-`string or nil`
-
-Default highlight group for the statusline. Useful if you want to hide the statusline without disabling it.
-
-#### components
-`table[]`
-
-List of components to show in the statusline.
-
-Currently available components are,
-- mode `Shows the current mode, supports icons & colors for individual modes`
-- buf_name `Shows the buffer name with it's filetype icon`
-- gap `Adds gap between components, optionally with a specific highlight group`
-- cursor_position `Shows the current column & row with icon, currently unfinished`
-
-More information about them are available in the statusline wiki files.
-
-<!-- -_ -->
-
-## Setting up the tabline <!-- -+ -->
-
-Just like the `statuscolumn` & `statusline`, the `tabline` can also be set in the configuration table.
-
->[!NOTE]
-> The tabline is `global` unlike the other ones. So, it works a bit differently then others.
-
-The tabline table with all the available options is given below.
-
-```lua
-{
-    enable = true,
-    options = {
-        default_hl = nil,
-
-        components = {}
-    }
-}
-```
-
-### enable
-`boolean or nil`
-
-Enables/Disables the tabline.
-
-### Options
-`{ set_defaults: boolean?, default_hl: string?, components: table[] }`
-
-The options used to configure the tabline.
-
-#### default_hl
-`string or nil`
-
-Default highlight group for the statusline. Useful if you want to hide the statusline without disabling it.
-
-#### components
-`table[]`
-
-List of components to show in the statusline.
-
-Currently available components are,
-- buffers `lists all the open buffers, conditions for listing them are also provided`
-- windows `lists all the open windows in the current tab`
-- tabs `lists the currently open tabs`
-
-More information about them are available in the statusline wiki files.
-
-<!-- -_ -->
-
-<!--- -_ -->
+Check the wiki for full specification.
 
 <!-- 
     vim:spell

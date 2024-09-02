@@ -19,8 +19,6 @@
 --- Configuration tale for the plugin
 ---@class bars.config
 ---
----@field ignore string[]?
----
 ---@field exclude_filetypes? string[]
 ---@field exclude_buftypes? string[]
 ---
