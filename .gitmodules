@@ -1,0 +1,3 @@
+[submodule "bars-N-lines.nvim.wiki"]
+	path = bars-N-lines.nvim.wiki
+	url = https://github.com/OXY2DEV/bars-N-lines.nvim.wiki.git

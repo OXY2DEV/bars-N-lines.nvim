@@ -107,6 +107,7 @@ end
 
 ---@type bars.tabline.config
 tabline.configuration = {
+	enable = true,
 	parts = {
 		{
 			type = "gap",
@@ -114,7 +115,6 @@ tabline.configuration = {
 		},
 		{
 			type = "tabs",
-			max_cols = 25,
 			id = 3,
 
 			active = {
@@ -130,8 +130,7 @@ tabline.configuration = {
 
 				padding_left = { " ", "BarsTablineTabInactive" },
 				padding_right = { " " },
-			},
-			wrap = { "⟩" }
+			}
 		},
 		{
 			type = "bufs",
@@ -154,10 +153,7 @@ tabline.configuration = {
 
 			ignore = { "" }
 		},
-	},
-
-	skip_buftypes = { "nofile", "terminal" },
-	skip_filetypes = { "noice" },
+	}
 }
 
 

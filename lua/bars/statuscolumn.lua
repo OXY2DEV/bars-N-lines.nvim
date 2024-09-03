@@ -113,6 +113,7 @@ end
 
 ---@type bars.statuscolumn.config
 statuscolumn.configuration = {
+	enable = true,
 	parts = {
 		{ type = "sign" },
 		{
@@ -225,9 +226,14 @@ statuscolumn.m_fold = function (config_table, buffer, window)
 	local foldInfo_after = ffi.C.fold_info(handle, next_line);
 
 	local markers = config_table.markers;
+	local closed;
+
+	vim.api.nvim_win_call(window, function ()
+		closed = vim.fn.foldclosed(vim.v.lnum);
+	end)
 
 	if foldInfo.start == vim.v.lnum then
-		if vim.fn.foldclosed(vim.v.lnum) ~= -1 then
+		if closed ~= -1 then
 			-- Opened fold
 			return get_output({
 				content = utils.format_input(markers.open, foldInfo.level)
