@@ -236,41 +236,41 @@ statuscolumn.m_fold = function (config_table, buffer, window)
 		if closed ~= -1 then
 			-- Opened fold
 			return get_output({
-				content = utils.format_input(markers.open, foldInfo.level)
+				content = utils.tbl_clamp(markers.open, foldInfo.level)
 			}, window);
 		elseif foldInfo_after.level >= foldInfo.level then
 			-- Closed fold
 			return get_output({
-				content = utils.format_input(markers.close, foldInfo.level)
+				content = utils.tbl_clamp(markers.close, foldInfo.level)
 			}, window);
 		elseif foldInfo_after.level >= 1 then
 			-- Inside a fold
 			return get_output({
-				content = utils.format_input(markers.scope, foldInfo.level)
+				content = utils.tbl_clamp(markers.scope, foldInfo.level)
 			}, window);
 		end
 	elseif foldInfo.start ~= foldInfo_after.start and foldInfo.level >= foldInfo_after.level then
 		if (foldInfo_after.level == 0 or (next_line == foldInfo_after.start and foldInfo_after.level <= vim.o.foldlevelstart)) and foldInfo.level >= foldInfo_after.level then
 			-- End of fold
 			return get_output({
-				content = utils.format_input(markers.foldend, foldInfo.level)
+				content = utils.tbl_clamp(markers.foldend, foldInfo.level)
 			}, window);
 		else
 			-- Nested fold end
 			return get_output({
-				content = utils.format_input(markers.divider, foldInfo.level)
+				content = utils.tbl_clamp(markers.divider, foldInfo.level)
 			}, window);
 		end
 	elseif foldInfo.level > 0 then
 		if next_line == vim.v.lnum then
 			-- End of fold
 			return get_output({
-				content = utils.format_input(markers.foldend, foldInfo.level)
+				content = utils.tbl_clamp(markers.foldend, foldInfo.level)
 			}, window);
 		else
 			-- Inside a fold
 			return get_output({
-				content = utils.format_input(markers.scope, foldInfo.level)
+				content = utils.tbl_clamp(markers.scope, foldInfo.level)
 			}, window);
 		end
 	end
@@ -285,6 +285,11 @@ end
 ---@return string
 ---@return integer
 statuscolumn.m_signs = function (config_table, buffer, window)
+	-- Don't show the signs if the line is a wrapped/virtual line
+	if vim.v.virtnum ~= 0 then
+		return "  ", 2;
+	end
+
 	local signs = utils.sort_by_priority(
 		vim.api.nvim_buf_get_extmarks(buffer,
 			-1,

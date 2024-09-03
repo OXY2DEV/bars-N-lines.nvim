@@ -31,10 +31,14 @@ _G.__bars = {
 ---@param config table
 local configure = function (part, config)
 	if not config then
+		-- Config table doesn't exist
 		return;
 	elseif config == false then
+		-- `false` was provided don't configure
 		return;
 	elseif type(config) == "table" then
+		-- Check if module has a config but was disabled
+		-- via the config
 		if config.enable ~= true then
 			return;
 		elseif part then
@@ -43,6 +47,8 @@ local configure = function (part, config)
 	end
 end
 
+--- Adds highlight groups
+---@param obj table[]
 bars.add_hls = function (obj)
 	local use_hl = {};
 

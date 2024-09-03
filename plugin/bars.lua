@@ -1,5 +1,4 @@
 local bars = require("bars");
-
 local utils = require("bars.utils");
 
 --- Checks if a module is enabled or not
@@ -64,4 +63,4 @@ bars.autocmd = vim.api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TermOpe
 			bars.tabline.init();
 		end
 	end
-})
+});
