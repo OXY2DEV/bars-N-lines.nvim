@@ -92,8 +92,6 @@ MiniDeps.add({
 
 ### 🌘 Rocks.nvim
 
-> Not yet ready.
-
 ```vim
 :Rocks install bars-N-lines.nvim
 ```
