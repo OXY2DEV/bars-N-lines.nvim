@@ -2,6 +2,10 @@
 
 An example *bars & lines* plugin for `Neovim`.
 
+<p align="center">
+    <a href="https://github.com/OXY2DEV/bars-N-lines.nvim/wiki">Wiki page</a>
+</p>
+
 ![statuscolumn](https://github.com/OXY2DEV/bars-N-lines.nvim/blob/images/Main/statuscolumn.gif)
 ![statusline](https://github.com/OXY2DEV/bars-N-lines.nvim/blob/images/Main/statusline.gif)
 ![tabline](https://github.com/OXY2DEV/bars-N-lines.nvim/blob/images/Main/tabline.gif)
@@ -107,7 +111,7 @@ MiniDeps.add({
 }
 ```
 
-Check the wiki for full specification.
+Check the [wiki](https://github.com/OXY2DEV/bars-N-lines.nvim/wiki) for full specification.
 
 <!-- 
     vim:spell
