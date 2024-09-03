@@ -93,7 +93,7 @@ MiniDeps.add({
 ### 🌘 Rocks.nvim
 
 ```vim
-:Rocks install bars-N-lines.nvim
+:Rocks install bars-n-lines.nvim
 ```
 
 ## 🧩 Setup
