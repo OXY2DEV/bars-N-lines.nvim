@@ -374,33 +374,15 @@ TEMPLATES = {
 	---|fE
 };
 
----@class bars.statusline.config
----
----@field force_attach string[]
----@field condition? fun(win: integer, buf: integer): boolean
----
----@field filetypes? string[]
----@field buftypes? string[]
----
----@field ignore_filetypes? string[]
----@field ignore_buftypes? string[]
+---@class bars.generic.config
 statusline.config = {
-	-- force_attach = {},
-	-- condition = function () return true; end
-
-	-- filetypes = {},
-	-- buftypes = {},
-
-	-- ignore_buftypes = {},
-	-- ignore_filetypes = {},
-
 	force_attach = {
 		-- `Quickfix` window's statusline.
 		"%t%{exists('w:quickfix_title')? ' '.w:quickfix_title : ''} %=%-15(%l,%c%V%) %P",
 	},
 
 	ignore_filetypes = {},
-	ignore_buftypes = {},
+	ignore_buftypes = { "nofile" },
 
 	default = {
 		---|fS "Default configuration"
