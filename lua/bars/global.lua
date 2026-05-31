@@ -35,7 +35,7 @@ _G.bars_change_diagnostic_state = function ()
 	local mousepos = vim.fn.getmousepos();
 	local window = mousepos.winid
 
-	if statusline.state.attached_windows[window] ~= true then
+	if statusline.state.window_state[window] ~= true then
 		--- Window isn't connected to bars.
 		return;
 	end
