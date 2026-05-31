@@ -1,5 +1,65 @@
 # Changelog
 
+## [3.0.0](https://github.com/OXY2DEV/bars.nvim/compare/v2.2.0...v3.0.0) (2026-05-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* **winhar:** Changed name for TSNode component(`__lockup -> _ellipsis`)
+* Preparation for exposing internal variables
+* Removed unnecessary config value
+
+### rrfactir
+
+* Removed unnecessary config value ([6c8cf9b](https://github.com/OXY2DEV/bars.nvim/commit/6c8cf9b40540f903c6373b64e8e4493c81bfe468))
+
+
+### Features
+
+* Added `Start` & `Stop` sub-commands ([db9dca8](https://github.com/OXY2DEV/bars.nvim/commit/db9dca8a8465275a3e203caedbd6093b2778104a))
+* Listen to OptionSet ([0246e9d](https://github.com/OXY2DEV/bars.nvim/commit/0246e9d063b8b186983e502411b01ffa9537e8cf))
+* **statuscolumn, statusline, winbar:** Added ability to ignore custom values ([c03c3ee](https://github.com/OXY2DEV/bars.nvim/commit/c03c3eeb5629c77a392b1ed5760df60568b84a8a))
+* **statuscolumn:** Added `Toggle`, `Enable`, `Disable` etc. command support ([6079b0d](https://github.com/OXY2DEV/bars.nvim/commit/6079b0dba3726af26baa303b6a6e8056dc802cf4))
+* **statusline:** Added action support ([3588177](https://github.com/OXY2DEV/bars.nvim/commit/3588177eae189079ed5aeba16a2da70852f4a408))
+* **statusline:** Added missing `Toggle` function ([8d8085c](https://github.com/OXY2DEV/bars.nvim/commit/8d8085c9001f4de928e07cdfe53b211bc9b19be2))
+* **statusline:** Statusline no longer gets overwritten by `quickfix` window ([745c5a4](https://github.com/OXY2DEV/bars.nvim/commit/745c5a4d164703ce45cc181457e2d4318aed87cd))
+* **statusline:** Support for other icon providers ([acc6f04](https://github.com/OXY2DEV/bars.nvim/commit/acc6f04076db7924c862f208449ea3e5cdbd1d3a))
+* **statusline:** Use `gitsigns.nvim` when available for branch name ([b774825](https://github.com/OXY2DEV/bars.nvim/commit/b7748251cb0e44a11c32d40d6d9bfb756e0ca307))
+* **tabline:** Added `Toggle`, `Enable`, `Disable` etc. command support ([a8beb06](https://github.com/OXY2DEV/bars.nvim/commit/a8beb066266e204eeac9adbe9b45226ebb56dcb6))
+* Update styles when filetype & buftype changes ([a6725bc](https://github.com/OXY2DEV/bars.nvim/commit/a6725bcf01d88241770ce77cde2c4c68df344777))
+* **winbar:** Added `Toggle`, `Enable`, `Disable` etc. command support ([4976871](https://github.com/OXY2DEV/bars.nvim/commit/4976871625c35e2e93b0dfabed7d5105649236c5))
+
+
+### Bug Fixes
+
+* Added missing setup function ([6cdecdb](https://github.com/OXY2DEV/bars.nvim/commit/6cdecdb091f5aa8c1c842024a9176b799a8b2446))
+* Allow user specified styles ([71124bb](https://github.com/OXY2DEV/bars.nvim/commit/71124bbbbed090588fcdbc529bc9fabc02756500))
+* Fixed attachmemt issues for some windows ([2ad6549](https://github.com/OXY2DEV/bars.nvim/commit/2ad6549f559f4cd1b1664cf86185b757f6e98027))
+* Fixed flashing of default bars when `OptionSet` is triggered ([0cdb6ef](https://github.com/OXY2DEV/bars.nvim/commit/0cdb6ef7de5090b141db3bcc81b8c0be4a2be756))
+* **generics:** `Toggle` now works as expected ([a533c68](https://github.com/OXY2DEV/bars.nvim/commit/a533c686e811c64b932e431ad0c989a26b18ec50))
+* **global:** Fixed a bug with incorrect state variable access ([329ef0a](https://github.com/OXY2DEV/bars.nvim/commit/329ef0ac29db65bcf9518b4542974fad004ae8c8))
+* **highlights:** Updated `BarsFt6` definition ([06ad70f](https://github.com/OXY2DEV/bars.nvim/commit/06ad70f9fadff10ff1a16864516a6bcd822c47f7))
+* **statuscolumn, statusline, winbar:** Custom values set by user & plugins is now respected ([6f40fa4](https://github.com/OXY2DEV/bars.nvim/commit/6f40fa452b4df8101514add507c4232f5bb47071))
+* **statuscolumn:** Fixed a bug with `setup()` overriding incorrect variable ([6ec55c1](https://github.com/OXY2DEV/bars.nvim/commit/6ec55c1df6c9d7c27e00767016a717b384581664))
+* **statuscolumn:** Fixed a bug with signs not showing up in normal mode ([bf475c5](https://github.com/OXY2DEV/bars.nvim/commit/bf475c563a5d26c11054ea39b4c9b43195785f05))
+* **statuscolumn:** Fixed invalid functiom call ([da46fe2](https://github.com/OXY2DEV/bars.nvim/commit/da46fe27ff638c57a7780481eed51297c03edb08))
+* **statuscolumn:** Reverted a change causing `numberwidth` & `relativenumber` to not be restored correctly ([89e8f63](https://github.com/OXY2DEV/bars.nvim/commit/89e8f63ccea81823389f23b76e54be6c1afb09c4))
+* **statusline, diagnostics:** `auto_hide`&lt; now works when diagnostics count is empty ([af5ead8](https://github.com/OXY2DEV/bars.nvim/commit/af5ead8d9b651add2f54387e7f567941020fe008))
+* **statusline, statuscolumn, winbar:** Fixed a bug preventing windows from attaching ([7aa6057](https://github.com/OXY2DEV/bars.nvim/commit/7aa60575e8db3b3003267b616255b8c150ad5225))
+* **statusline:** `remove()` now only works on attached windows ([823ec48](https://github.com/OXY2DEV/bars.nvim/commit/823ec48f1b8bdb9ea40b2cc275450f4789b957dd))
+* **statusline:** Changed behavior of `Enable`, `Disable` & `Toggle` ([56504e4](https://github.com/OXY2DEV/bars.nvim/commit/56504e4aef1dc49d960cc568eda74f3495e49598))
+* **statusline:** Do not attach to `nofile` buffers by default ([d6c6d9b](https://github.com/OXY2DEV/bars.nvim/commit/d6c6d9bb600df9ce2acf8045e44a240373f722c9))
+* **statusline:** Fixed issue with getting icons from `icons.nvim` ([6d7915a](https://github.com/OXY2DEV/bars.nvim/commit/6d7915a5dde134a3f188567fdc43dc3dd3ce376e))
+* **winbar:** Fixed `Toggle` command ([97600c2](https://github.com/OXY2DEV/bars.nvim/commit/97600c21b261ce01772e477cacaf83bc8ac38fd5))
+* **winbar:** Fixed an issue with `Toggle` not working ([ddedfd8](https://github.com/OXY2DEV/bars.nvim/commit/ddedfd889dc76a385c748ce39b90bb0e89c51986))
+* **winbar:** Fixed attachment logic for windows ([5100872](https://github.com/OXY2DEV/bars.nvim/commit/510087262fc8b4d99f850070c3fc6aa1c01c657d))
+
+
+### Code Refactoring
+
+* Preparation for exposing internal variables ([0663d47](https://github.com/OXY2DEV/bars.nvim/commit/0663d473915a4d4613d69ee76089fe1b60385133))
+* **winhar:** Changed name for TSNode component(`__lockup -> _ellipsis`) ([30cc0d3](https://github.com/OXY2DEV/bars.nvim/commit/30cc0d37e025d83ddccaedc5eae9f5ebca5e1c1b))
+
 ## [2.2.0](https://github.com/OXY2DEV/bars.nvim/compare/v2.1.0...v2.2.0) (2025-07-03)
 
 
